@@ -1,0 +1,4 @@
+Common:
+    gpu: true
+    local_rank: -1
+    fp16: false
