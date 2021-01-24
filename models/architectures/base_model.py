@@ -67,10 +67,11 @@ class BaseModel(nn.Module):
             _load_from_paddle_state_dict(module, prefix, local_metadata, True)
             for name, child in module._modules.items():
                 if child is not None:
-                    load(child, prefix+name+'.')
+                    load(child, prefix + name + '.')
 
         def _load_from_paddle_state_dict(module, prefix, local_metadata, strict):
-            persistent_buffers = {k: v for k, v in module._buffers.items() if k not in self._non_persistent_buffers_set}
+            persistent_buffers = {k: v for k, v in module._buffers.items() if
+                                  k not in module._non_persistent_buffers_set}
             local_name_params = itertools.chain(module._parameters.items(), persistent_buffers.items())
             local_state = {k: v for k, v in local_name_params if v is not None}
 
@@ -127,9 +128,9 @@ class BaseModel(nn.Module):
             print(error_msg)
 
     def _check_param_name(self, key):
-        matched_keys = {'running_mean':'_mean',
+        matched_keys = {'running_mean': '_mean',
                         '_mean': 'running_mean',
-                        'running_var':'_variance',
+                        'running_var': '_variance',
                         '_variance': 'running_var'}
 
         return matched_keys.get(key, key)
@@ -138,5 +139,3 @@ class BaseModel(nn.Module):
         if isinstance(module, nn.Linear) and len(param.shape) > 1:
             param = param.transpose(-1, -2)
         return param
-
-

@@ -11,6 +11,23 @@ import functools
 logger_initialized = set()
 
 
+def get_img_list(img_file):
+    img_lists = []
+    if img_file is None or not os.path.exists(img_file):
+        raise FileNotFoundError("file path: {} is not exist".format(img_file))
+
+    if os.path.isfile(img_file):
+        img_lists.append(img_file)
+    elif os.path.isdir(img_file):
+        for file_name in os.listdir(img_file):
+            file_path = os.path.join(img_file, file_name)
+            if os.path.isfile(file_path):
+                img_lists.append(file_name)
+    if len(img_lists) == 0:
+        raise Exception('not find any img file in {}'.format(img_file))
+    return img_lists
+
+
 def get_config(file):
     """
     读取yaml配置文件，获取网络配置
