@@ -4,8 +4,10 @@
 
 import torch.nn as nn
 import torch.nn.functional as F
+from . import register_head
 
 
+@register_head('CTCHead')
 class CTCHead(nn.Module):
     def __init__(self, in_channels, out_channels, fc_decay=0.0004, **kwargs):
         super(CTCHead, self).__init__()

@@ -4,6 +4,7 @@
 
 import torch
 import torch.nn as nn
+from . import register_neck
 
 
 class Im2Seq(nn.Module):
@@ -34,6 +35,7 @@ class EncoderWithRNN(nn.Module):
         return x
 
 
+@register_neck('SequenceEncoder')
 class SequenceEncoder(nn.Module):
     def __init__(self, in_channels, encoder_type, hidden_size=48, **kwargs):
         super(SequenceEncoder, self).__init__()

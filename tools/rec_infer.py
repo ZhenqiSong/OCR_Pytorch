@@ -27,6 +27,7 @@ def main():
     if hasattr(post_process_class, 'character'):
         config['Architecture']["Head"]['out_channels'] = len(getattr(post_process_class, 'character'))
     logger.info('构建模型，字典包含{}个字'.format(config['Architecture']["Head"]['out_channels']))
+    logger.info('模型结构：{}'.format(config['Architecture']))
     model = build_model(config['Architecture'])
 
     logger.info('加载预训练模型 {}...'.format(global_config['pretrained_model']))

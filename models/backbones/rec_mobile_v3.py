@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # __author__:Song Zhenqi
 # 2021-01-20
+from abc import ABC
 
 import torch
 import torch.nn as nn
 from ..layers import Conv2dBNLayer, ResidualBlock
+from . import register_rec_backbone
 
 
 def make_divisible(v, divisor=8, min_value=None):
@@ -16,6 +18,7 @@ def make_divisible(v, divisor=8, min_value=None):
     return new_v
 
 
+@register_rec_backbone('MobileNetV3')
 class MobileNetV3(nn.Module):
     def __init__(self, in_channels: int = 3,
                  model_name: str = 'small',
