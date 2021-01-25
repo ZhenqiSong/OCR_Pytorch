@@ -3,7 +3,6 @@
 # 2021-01-20
 
 from argparse import ArgumentParser
-import numpy as np
 
 import torch
 
@@ -49,13 +48,14 @@ def main():
 
     model.eval()
     for file in get_img_list(config['Global']['infer_img']):
-        print(file)
+        logger.info('输入图像：{}'.format(file))
         data = {'image': file}
         batch = transforms(data)
 
         images = torch.from_numpy(batch[0]).unsqueeze(0)
         preds = model(images)
-        print(preds)
+        post_result = post_process_class(preds)
+        logger.info("result: {}".format(post_result))
 
 
 if __name__ == '__main__':

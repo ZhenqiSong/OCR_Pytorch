@@ -91,7 +91,7 @@ class CTCLabelDecode(BaseRecLabelDecode):
 
     def __call__(self, preds, label=None, *args, **kwargs):
         if isinstance(preds, torch.Tensor):
-            preds = preds.numpy()
+            preds = preds.detach().numpy()
 
         preds_idx = preds.argmax(axis=2)
         preds_prob = preds.max(axis=2)

@@ -2,6 +2,7 @@
 # __author__:Song Zhenqi
 # 2020/11/16
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -11,8 +12,10 @@ def hswish(x, inplace=True):
     return out
 
 
-def hsigmoid(x, inplace=True):
-    out = F.relu6(x + 3, inplace=inplace) / 6
+def hsigmoid(x, slope=0.2, offset=0.5, inplace=True):
+    out = x * slope + offset
+    torch.clamp_max_(out, 1)
+    torch.clamp_min_(out, 0)
     return out
 
 

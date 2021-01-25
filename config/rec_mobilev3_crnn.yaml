@@ -13,7 +13,7 @@ Global:
   checkpoints:
   save_inference_dir:
   use_visualdl: False
-  infer_img: sample/word_1.jpg
+  infer_img: sample/test1.png
   # for data or label process
   character_dict_path: utils/word_keys.txt
   character_type: ch

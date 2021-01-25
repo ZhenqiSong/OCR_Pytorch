@@ -115,6 +115,7 @@ class MobileNetV3(nn.Module):
                                    padding=0,
                                    groups=1,
                                    if_act=True,
+                                   bias=False,
                                    act='hard_swish')
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
