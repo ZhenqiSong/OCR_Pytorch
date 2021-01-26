@@ -38,10 +38,10 @@ class BaseModel(nn.Module):
             config['Neck']['in_channels'] = in_channels
             self.neck = build_neck(config['Neck'])
             in_channels = self.neck.out_channels
-
-        # Head
-        config["Head"]['in_channels'] = in_channels
-        self.head = build_head(config["Head"])
+        #
+        # # Head
+        # config["Head"]['in_channels'] = in_channels
+        # self.head = build_head(config["Head"])
 
     def forward(self, x):
         x = self.backbone(x)

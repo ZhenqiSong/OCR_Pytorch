@@ -6,7 +6,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 from ..layers import Conv2dBNLayer, ResidualBlock
-from . import register_rec_backbone
+from . import register_rec_backbone, register_det_backbone
 
 
 def make_divisible(v, divisor=8, min_value=None):
@@ -19,14 +19,14 @@ def make_divisible(v, divisor=8, min_value=None):
 
 
 @register_rec_backbone('MobileNetV3')
-class MobileNetV3(nn.Module):
+class RecMobileNetV3(nn.Module):
     def __init__(self, in_channels: int = 3,
                  model_name: str = 'small',
                  scale: float = 0.5,
                  large_stride=None,
                  small_stride=None,
                  **kwargs):
-        super(MobileNetV3, self).__init__()
+        super(RecMobileNetV3, self).__init__()
 
         if small_stride is None:
             small_stride = [2, 2, 2, 2]
@@ -130,3 +130,108 @@ class MobileNetV3(nn.Module):
         x = self.conv2(x)
         x = self.pool(x)
         return x
+
+
+@register_det_backbone("MobileNetV3")
+class DetMobileV3(nn.Module):
+    def __init__(self, in_channels=3, model_name='large', scale=0.5, disable_se=False, **kwargs):
+        super(DetMobileV3, self).__init__()
+
+        self.disable_se = disable_se
+        if model_name == "large":
+            cfg = [
+                # k, exp, c,  se,     nl,  s,
+                [3, 16, 16, False, 'relu', 1],
+                [3, 64, 24, False, 'relu', 2],
+                [3, 72, 24, False, 'relu', 1],
+                [5, 72, 40, True, 'relu', 2],
+                [5, 120, 40, True, 'relu', 1],
+                [5, 120, 40, True, 'relu', 1],
+                [3, 240, 80, False, 'hard_swish', 2],
+                [3, 200, 80, False, 'hard_swish', 1],
+                [3, 184, 80, False, 'hard_swish', 1],
+                [3, 184, 80, False, 'hard_swish', 1],
+                [3, 480, 112, True, 'hard_swish', 1],
+                [3, 672, 112, True, 'hard_swish', 1],
+                [5, 672, 160, True, 'hard_swish', 2],
+                [5, 960, 160, True, 'hard_swish', 1],
+                [5, 960, 160, True, 'hard_swish', 1],
+            ]
+            cls_ch_squeeze = 960
+        elif model_name == "small":
+            cfg = [
+                # k, exp, c,  se,     nl,  s,
+                [3, 16, 16, True, 'relu', 2],
+                [3, 72, 24, False, 'relu', 2],
+                [3, 88, 24, False, 'relu', 1],
+                [5, 96, 40, True, 'hard_swish', 2],
+                [5, 240, 40, True, 'hard_swish', 1],
+                [5, 240, 40, True, 'hard_swish', 1],
+                [5, 120, 48, True, 'hard_swish', 1],
+                [5, 144, 48, True, 'hard_swish', 1],
+                [5, 288, 96, True, 'hard_swish', 2],
+                [5, 576, 96, True, 'hard_swish', 1],
+                [5, 576, 96, True, 'hard_swish', 1],
+            ]
+            cls_ch_squeeze = 576
+        else:
+            raise NotImplementedError("mode[" + model_name +
+                                      "_model] is not implemented!")
+
+        supported_scale = [0.35, 0.5, 0.75, 1.0, 1.25]
+        assert scale in supported_scale, \
+            "supported scale are {} but input scale is {}".format(supported_scale, scale)
+        inplanes = 16
+
+        self.conv = Conv2dBNLayer(in_channels=in_channels,
+                                  out_channels=make_divisible(inplanes*scale),
+                                  kernel_size=3,
+                                  stride=2,
+                                  padding=1,
+                                  bias=False,
+                                  act='hard_swish')
+        self.stages = []
+        self.out_channels = []
+        block_list = []
+        self.blocks = nn.Sequential()
+        inplanes = make_divisible(inplanes * scale)
+        for i, (k, exp, c, se, nl, s) in enumerate(cfg):
+            se = se and not self.disable_se
+
+            if s == 2 and i > 2:
+                self.out_channels.append(inplanes)
+                self.stages.append(nn.Sequential(*block_list))
+                block_list = []
+
+            block_list.append(
+                ResidualBlock(in_filters=inplanes,
+                              middle_filters=make_divisible(scale * exp),
+                              out_filters=make_divisible(scale * c),
+                              filter_size=k,
+                              stride=s,
+                              use_se=se,
+                              act=nl))
+            inplanes = make_divisible(scale * c)
+
+        block_list.append(
+            Conv2dBNLayer(in_channels=inplanes,
+                          out_channels=make_divisible(scale * cls_ch_squeeze),
+                          kernel_size=1,
+                          stride=1,
+                          padding=0,
+                          groups=1,
+                          if_act=True,
+                          bias=False,
+                          act='hard_swish'))
+        self.stages.append(nn.Sequential(*block_list))
+        self.out_channels.append(make_divisible(scale * cls_ch_squeeze))
+        for i, stage in enumerate(self.stages):
+            self.add_module(name=f'stage{i}', module=stage)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        out_list = []
+        for stage in self.stages:
+            x = stage(x)
+            out_list.append(x)
+        return out_list
