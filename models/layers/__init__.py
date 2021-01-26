@@ -4,6 +4,11 @@
 
 from .custom_module import *
 from .residual_unit import ResidualBlock
+from .resnet_units import BottleneckBlock
+from .resnet_units import BasicBlock as BasicResBlock
 
-__all__ = ['Conv2dBNLayer', 'ResidualBlock']
+__all__ = ['Conv2dBNLayer',
+           'ResidualBlock',
+           'BottleneckBlock',
+           'BasicResBlock']
 

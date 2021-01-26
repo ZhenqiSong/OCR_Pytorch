@@ -21,6 +21,12 @@ def get_args():
 
 def main():
     global_config = config['Global']
+
+    device = torch.device('cpu')
+    if global_config['use_gpu'] is True and torch.cuda.is_available():
+        device = torch.device('cuda')
+    logger.info('使用设备：{}'.format(device))
+
     post_process_class = build_post_process(config['PostProcess'],
                                             global_config)
 
@@ -29,6 +35,7 @@ def main():
     logger.info('构建模型，字典包含{}个字'.format(config['Architecture']["Head"]['out_channels']))
     logger.info('模型结构：{}'.format(config['Architecture']))
     model = build_model(config['Architecture'])
+    model.to(device)
 
     logger.info('加载预训练模型 {}...'.format(global_config['pretrained_model']))
     state_dict = torch.load(global_config['pretrained_model'])
@@ -53,7 +60,8 @@ def main():
         data = {'image': file}
         batch = transforms(data)
 
-        images = torch.from_numpy(batch[0]).unsqueeze(0)
+        images = torch.from_numpy(batch[0]).to(device)
+        images = images.unsqueeze(0)
         preds = model(images)
         post_result = post_process_class(preds)
         logger.info("result: {}".format(post_result))

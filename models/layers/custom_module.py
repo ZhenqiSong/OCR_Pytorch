@@ -34,7 +34,7 @@ class Conv2dBNLayer(nn.Module):
                                  affine=affine,
                                  track_running_stats=track_running_stats)
 
-        if act is not None:
+        if self.is_act and act is not None:
             self.act = activations[act](inplace=inplace)
 
     def forward(self, x):
