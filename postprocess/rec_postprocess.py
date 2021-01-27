@@ -4,6 +4,7 @@
 
 import torch
 import numpy as np
+from . import register_post
 
 
 class BaseRecLabelDecode(object):
@@ -80,6 +81,7 @@ class BaseRecLabelDecode(object):
         return [0]  # for ctc blank
 
 
+@register_post('CTCLabelDecode')
 class CTCLabelDecode(BaseRecLabelDecode):
     def __init__(self,
                  character_dict_path=None,

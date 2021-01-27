@@ -4,9 +4,9 @@
 
 from argparse import ArgumentParser
 import torch
-
 from utils import get_logger, get_config
 from models.architectures import build_model
+from postprocess import build_post_process
 
 
 def get_args():
@@ -27,8 +27,10 @@ def main():
     logger.info('模型信息：{}'.format(config['Architecture']))
     model = build_model(config['Architecture'])
 
-    for k, v in model.state_dict().items():
-        print(k, v.shape)
+    state_dict = torch.load(global_config['pretrained_model'])
+    model.load_state_dict(state_dict)
+
+    post_process_class = build_post_process(config['PostProcess'])
 
 
 if __name__ == '__main__':

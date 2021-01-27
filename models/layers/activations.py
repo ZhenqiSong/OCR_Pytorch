@@ -12,7 +12,14 @@ def hswish(x, inplace=True):
     return out
 
 
-def hsigmoid(x, slope=0.2, offset=0.5, inplace=True):
+def hsigmoid(x, slope=0.2, offset=0.5):
+    """
+    pytorch中也自带有该函数，但是参数和paddle的有差别，公式为 x / 6 + 0.5， paddle里的是 x / 5 + 0.5
+    :param x: 输入
+    :param slope:
+    :param offset:
+    :return:
+    """
     out = x * slope + offset
     torch.clamp_max_(out, 1)
     torch.clamp_min_(out, 0)
