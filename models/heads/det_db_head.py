@@ -36,7 +36,7 @@ class Head(nn.Module):
         x = self.conv2(x)
         x = F.relu(self.conv_bn2(x), inplace=True)
         x = self.conv3(x)
-        x = F.sigmoid(x)
+        x = torch.sigmoid(x)
         return x
 
 
@@ -57,6 +57,7 @@ class DBHead(nn.Module):
         threshold_maps = self.thresh(x)
         binary_maps = self.step_function(shrink_maps, threshold_maps)
         y = torch.cat([shrink_maps, threshold_maps, binary_maps], dim=1)
+        return y
 
     def step_function(self, x, y):
         return torch.reciprocal(1 + torch.exp(-self.k * (x-y)))

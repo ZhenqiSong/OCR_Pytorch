@@ -1,5 +1,5 @@
 from torchvision import transforms
-from .operators import DecodeImage, RecResizeImg, KeepKeys
+from .operators import *
 
 
 def create_transformers(op_param_list: list, global_config=None):
@@ -17,3 +17,4 @@ def create_transformers(op_param_list: list, global_config=None):
         op = eval(op_name)(**param)
         ops.append(op)
     return transforms.Compose(ops)
+

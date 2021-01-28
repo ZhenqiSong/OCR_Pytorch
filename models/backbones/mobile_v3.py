@@ -229,7 +229,7 @@ class DetMobileV3(nn.Module):
             self.add_module(name=f'stage{i}', module=stage)
 
     def forward(self, x):
-        x = self.conv1(x)
+        x = self.conv(x)
         out_list = []
         for stage in self.stages:
             x = stage(x)
