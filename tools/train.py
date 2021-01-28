@@ -9,7 +9,8 @@ import random
 import torch
 import numpy as np
 
-logger = logging.getLogger(__name__)
+from utils import get_logger, get_config
+from data import build_dataloader
 
 
 def set_seed(seed, gpu=False):
@@ -20,28 +21,30 @@ def set_seed(seed, gpu=False):
         torch.cuda.manual_seed_all(seed)
 
 
-def main(config):
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO if config['Common']['local_rank'] in [-1, 0] else logging.WARN,
-    )
+def main():
+    logger = get_logger()
 
-    device = torch.device('cuda') if torch.cuda.is_available() and config['Common']['gpu'] \
-        else torch.device('cpu')
-    logger.warning(
-        "Process rank: %s, device: %s, distributed training: %s, 16-bits training: %s",
-        config['Common']['local_rank'],
-        device,
-        bool(config['Common']['local_rank'] != -1),
-        config['Common']['fp16'],
-    )
+    global_config = config['Global']
+    use_gpu = global_config['use_gpu']
 
-    set_seed(config['Common']['seed'], config['Common']['gpu'])
+    device = torch.device('cpu')
+    if use_gpu:
+        if torch.cuda.is_available():
+            n_gpus = torch.cuda.device_count()
+            device = torch.device('cuda')
+        else:
+            logger.warning("未发现可用于计算的GPU设备")
 
-    # 同步所有进程
-    if args.local_rank not in [-1, 0]:
-        torch.distributed.barrier()
+    train_dataloader = build_dataloader(config, device, logger, 'Train')
+    # logger.warning(
+    #     "Process rank: %s, device: %s, distributed training: %s, 16-bits training: %s",
+    #     config['Common']['local_rank'],
+    #     device,
+    #     bool(config['Common']['local_rank'] != -1),
+    #     config['Common']['fp16'],
+    # )
+
+    # set_seed(config['Common']['seed'], config['Common']['gpu'])
 
 
 if __name__ == '__main__':
@@ -49,7 +52,6 @@ if __name__ == '__main__':
     parser.add_argument('--config', '-c', type=str, help='The path of config file!')
     args = parser.parse_args()
 
-    with open(args.config, 'r') as f:
-        config_ = yaml.load(f, Loader=yaml.FullLoader)
+    config = get_config(args.config)
 
-    main(config_)
+    main()
