@@ -28,6 +28,7 @@ def main():
     use_gpu = global_config['use_gpu']
 
     device = torch.device('cpu')
+    n_gpus = 1
     if use_gpu:
         if torch.cuda.is_available():
             n_gpus = torch.cuda.device_count()
@@ -35,7 +36,10 @@ def main():
         else:
             logger.warning("未发现可用于计算的GPU设备")
 
+    config['Train']['loader']['batch_size'] = config['Train']['loader']['batch_size_per_card'] * n_gpus
+    config['Eval']['loader']['batch_size'] = config['Eval']['loader']['batch_size_per_card'] * n_gpus
     train_dataloader = build_dataloader(config, device, logger, 'Train')
+
     # logger.warning(
     #     "Process rank: %s, device: %s, distributed training: %s, 16-bits training: %s",
     #     config['Common']['local_rank'],

@@ -16,7 +16,7 @@ Global:
   infer_img: sample/test1.png
   # for data or label process
   character_dict_path: utils/word_keys.txt
-  character_type: ch
+  character_type: en
   max_text_length: 25
   infer_mode: False
   use_space_char: True
@@ -63,7 +63,7 @@ Metric:
 Train:
   dataset:
     name: RecDataset
-    data_dir: ./train_data/
+    data_dir: D:\SongZhenqi\dataset\OCR\icdar2015
     label_file_list: ["./train_data/train_list.txt"]
     transforms:
       - DecodeImage: # load image
@@ -77,9 +77,9 @@ Train:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 256
+    batch_size_per_card: 10
     drop_last: True
-    num_workers: 8
+    num_workers: 1
 
 Eval:
   dataset:

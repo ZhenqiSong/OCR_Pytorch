@@ -1,5 +1,7 @@
 from torchvision import transforms
 from .operators import *
+from .rec_img_aug import RecAug
+from .label_trans import CTCLabelEncode
 
 
 def create_transformers(op_param_list: list, global_config=None):
