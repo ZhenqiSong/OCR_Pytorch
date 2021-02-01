@@ -11,6 +11,10 @@ import numpy as np
 
 from utils import get_logger, get_config
 from data import build_dataloader
+from postprocess import build_post_process
+from models.architectures import build_model
+from models.losses import build_loss
+from models.optimizer import build_optimizer
 
 
 def set_seed(seed, gpu=False):
@@ -36,9 +40,33 @@ def main():
         else:
             logger.warning("未发现可用于计算的GPU设备")
 
+    set_seed(global_config['seed'], global_config['use_gpu'])
+
     config['Train']['loader']['batch_size'] = config['Train']['loader']['batch_size_per_card'] * n_gpus
     config['Eval']['loader']['batch_size'] = config['Eval']['loader']['batch_size_per_card'] * n_gpus
-    train_dataloader = build_dataloader(config, device, logger, 'Train')
+    logger.info("加载训练集：{}".format(config['Train']['loader']))
+    # train_dataloader = build_dataloader(config, device, logger, 'Train')
+    logger.info("加载验证集：{}".format(config['Eval']['loader']))
+    # valid_dataloader = build_dataloader(config, device, logger, 'Eval') if config['Eval'] else None
+
+    post_process_class = build_post_process(config['PostProcess'], global_config)
+
+    # 构建模型
+    if hasattr(post_process_class, 'character'):
+        char_num = len(getattr(post_process_class, 'character'))
+        config['Architecture']["Head"]['out_channels'] = char_num
+    logger.info("创建模型：{}".format(config['Architecture']))
+    model = build_model(config['Architecture'])
+
+    logger.info('创建损失函数：{}'.format(config['Loss']['name']))
+    loss_class = build_loss(config['Loss'])
+
+    optimizer, lr_scheduler = build_optimizer(
+        config['Optimizer'],
+        epochs=config['Global']['epoch_num'],
+        step_each_epoch=1024,
+        parameters=model.parameters()
+    )
 
     # logger.warning(
     #     "Process rank: %s, device: %s, distributed training: %s, 16-bits training: %s",
@@ -47,8 +75,6 @@ def main():
     #     bool(config['Common']['local_rank'] != -1),
     #     config['Common']['fp16'],
     # )
-
-    # set_seed(config['Common']['seed'], config['Common']['gpu'])
 
 
 if __name__ == '__main__':
