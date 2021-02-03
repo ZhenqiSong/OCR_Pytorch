@@ -35,3 +35,9 @@ def eval(model, dataloader, post_process, eval_class, device):
     model.train()
     metric['fps'] = total_frame / total_time
     return metric
+
+
+def is_main_process(local_rank):
+    return local_rank in [-1, 0]
+
+# def train()

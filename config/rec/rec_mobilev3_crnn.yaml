@@ -1,5 +1,7 @@
 Global:
   use_gpu: true
+  local_rank: -1
+  fp16: false
   epoch_num: 500
   seed: 42
   log_smooth_window: 20
@@ -76,7 +78,7 @@ Train:
           keep_keys: ['image', 'label', 'length'] # dataloader will return list in this order
   loader:
     shuffle: True
-    batch_size_per_card: 10
+    batch_size: 10
     drop_last: True
     num_workers: 1
 
@@ -97,5 +99,5 @@ Eval:
   loader:
     shuffle: False
     drop_last: False
-    batch_size_per_card: 1
+    batch_size: 1
     num_workers: 8

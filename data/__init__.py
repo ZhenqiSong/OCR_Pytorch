@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, DistributedSampler, BatchSampler
 __all__ = ['create_transformers']
 
 
-def build_dataloader(config, device, logger, mode):
+def build_dataloader(config, logger, mode):
     """创建dataloader， 用于数据加载"""
     config = copy.deepcopy(config)
 
@@ -27,7 +27,6 @@ def build_dataloader(config, device, logger, mode):
                             shuffle=loader_config['shuffle'],
                             num_workers=loader_config['num_workers'],
                             drop_last=loader_config['drop_last'])
-    for i in dataloader:
-        pass
+
     return dataloader
 
